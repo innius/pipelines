@@ -45,6 +45,11 @@ func doFlatten[T any](ctx context.Context, in <-chan []T, result chan<- T) {
 		select {
 		case <-ctx.Done():
 			return
+		default:
+		}
+		select {
+		case <-ctx.Done():
+			return
 		case t, ok := <-in:
 			if !ok {
 				return
@@ -65,6 +70,11 @@ func Map[S, T any](ctx context.Context, in <-chan S, f func(S) T, opts ...Option
 
 func doMap[S, T any](ctx context.Context, in <-chan S, f func(S) T, result chan<- T) {
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		select {
 		case <-ctx.Done():
 			return
@@ -96,6 +106,11 @@ func doMapCtx[S, T any](ctx context.Context, in <-chan S, f func(context.Context
 		select {
 		case <-ctx.Done():
 			return
+		default:
+		}
+		select {
+		case <-ctx.Done():
+			return
 		case s, ok := <-in:
 			if !ok {
 				return
@@ -120,6 +135,11 @@ func FlatMap[S, T any](ctx context.Context, in <-chan S, f func(S) []T, opts ...
 
 func doFlatMap[S, T any](ctx context.Context, in <-chan S, f func(S) []T, out chan<- T) {
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		select {
 		case <-ctx.Done():
 			return
@@ -148,6 +168,11 @@ func doFlatMapCtx[S, T any](ctx context.Context, in <-chan S, f func(context.Con
 		select {
 		case <-ctx.Done():
 			return
+		default:
+		}
+		select {
+		case <-ctx.Done():
+			return
 		case s, ok := <-in:
 			if !ok {
 				return
@@ -168,6 +193,11 @@ func Combine[T any](ctx context.Context, t1 <-chan T, t2 <-chan T, opts ...Optio
 func doCombine[T any](ctx context.Context, t1 <-chan T, t2 <-chan T, out chan<- T) {
 	closedCount := 0
 	for closedCount < 2 {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		select {
 		case <-ctx.Done():
 			return
@@ -202,6 +232,11 @@ func Tee[T any](ctx context.Context, ch <-chan T, opts ...Option) (<-chan T, <-c
 
 func doTee[T any](ctx context.Context, ch <-chan T, chan1, chan2 chan<- T) {
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		select {
 		case t, ok := <-ch:
 			if !ok {
@@ -242,6 +277,12 @@ func doOptionMap[S, T any](ctx context.Context, in <-chan S, out chan<- T, f fun
 		select {
 		case <-ctx.Done():
 			return
+		default:
+		}
+		select {
+		case <-ctx.Done():
+			return
+
 		case s, ok := <-in:
 			if !ok {
 				return
@@ -270,6 +311,11 @@ func OptionMapCtx[S, T any](ctx context.Context, in <-chan S, f func(context.Con
 
 func doOptionMapCtx[S, T any](ctx context.Context, in <-chan S, out chan<- T, f func(context.Context, S) *T) {
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		select {
 		case <-ctx.Done():
 			return
@@ -327,6 +373,9 @@ func doForkMapCtx[S, T any](ctx context.Context, in <-chan S, f func(context.Con
 		select {
 		case <-ctx.Done():
 			return
+		default:
+		}
+		select {
 		case s, ok := <-in:
 			if !ok {
 				return
@@ -475,10 +524,17 @@ func doWithConf[T any](ctx context.Context, doIt func(context.Context, ...chan T
 // An error is returned if and only if the provided context was cancelled before the input channel was closed.
 func Drain[T any](ctx context.Context, in <-chan T) ([]T, error) {
 	var result []T
+
 	for {
 		select {
 		case <-ctx.Done():
 			return result, ctx.Err()
+		default:
+		}
+		select {
+		case <-ctx.Done():
+			return result, ctx.Err()
+
 		case repo, ok := <-in:
 			if !ok {
 				return result, nil
@@ -494,6 +550,12 @@ func Drain[T any](ctx context.Context, in <-chan T) ([]T, error) {
 func Reduce[S, T any](ctx context.Context, in <-chan S, f func(T, S) T) (T, error) {
 	var result T
 	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("reduce closed")
+			return result, ctx.Err()
+		default:
+		}
 		select {
 		case <-ctx.Done():
 			fmt.Println("reduce closed")
@@ -539,6 +601,11 @@ func NewErrorSink(ctx context.Context, opts ...Option) (context.Context, *ErrorS
 
 func (s *ErrorSink) doErrSink(ctx context.Context, errors chan errWrapper) {
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		select {
 		case <-ctx.Done():
 			return
